@@ -40,7 +40,7 @@ const slugs = dataObj.map((el) =>
     lower: true,
   })
 );
-console.log(slugs)
+console.log(slugs);
 
 const templateOverview = fs.readFileSync(
   `./templates/template-overview.html`,
