@@ -6,14 +6,23 @@ const {
   updateTour,
   deleteTour,
   topTours,
+  getTourStats,
+  getMonthlyPlan,
 } = require('../controllers/tourController');
+const { protect } = require('../controllers/authenticationController');
 
 const router = express.Router();
 
 // Alias route
 router.route('/top-5-cheap').get(topTours, getAllTours);
 
-router.route('/').get(getAllTours).post(createTour);
+// Stats route
+router.route('/tour-stats').get(getTourStats);
+
+// Monthly plan
+router.route('/monthly-plan/:year').get(getMonthlyPlan);
+
+router.route('/').get(protect, getAllTours).post(createTour);
 router.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
 
 module.exports = router;
