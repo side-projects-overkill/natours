@@ -24,29 +24,43 @@ const handleJsonWebTokenError = () =>
 const handleTokenExpiredError = () =>
   new AppError('Token expired. Please log in again.', 401);
 
-const sendErrorForDev = (err, res) =>
-  res.status(err.statusCode).json({
-    status: err.status,
-    error: err,
-    message: err.message,
-    stack: err.stack,
-  });
-
-const sendErrorProduction = (err, res) => {
-  // Operational error, trusted error
-  if (err.isOperational) {
+const sendErrorForDev = (err, req, res) => {
+  if (req.originalUrl.startsWith('/api')) {
     return res.status(err.statusCode).json({
       status: err.status,
+      error: err,
       message: err.message,
+      stack: err.stack,
     });
   }
-  // Program error
-  // Log error
-  console.error(`Error ${new Date()}: ${err}`);
-  // Send generic response
-  return res.status(500).json({
-    status: 'error',
-    message: `Something went very wrong`,
+  // Show a website on error
+  return res.status(err.statusCode).render('error', {
+    title: 'Something went wrong',
+    msg: err.message,
+  });
+};
+
+const sendErrorProduction = (err, req, res) => {
+  // Operational error, trusted error
+  if (req.originalUrl.startsWith('/api')) {
+    if (err.isOperational) {
+      return res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+      });
+    }
+    // Program error
+    // Log error
+    console.error(`Error ${new Date()}: ${err}`);
+    // Send generic response
+    return res.status(500).json({
+      status: 'error',
+      message: `Something went very wrong`,
+    });
+  }
+  return res.status(err.statusCode).render('error', {
+    title: 'Something went wrong',
+    msg: err.message,
   });
 };
 
@@ -56,7 +70,7 @@ module.exports = (err, req, res, next) => {
   err.status = err.status || 'error';
 
   if (process.env.NODE_ENV === 'development') {
-    return sendErrorForDev(err, res);
+    return sendErrorForDev(err, req, res);
   }
 
   if (process.env.NODE_ENV === 'production') {

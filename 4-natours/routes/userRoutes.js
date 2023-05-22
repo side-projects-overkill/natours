@@ -8,6 +8,8 @@ const {
   updateMe,
   deleteMe,
   getMe,
+  uploadUserPhoto,
+  resizeUserPhoto,
 } = require('../controllers/userController');
 const {
   signup,
@@ -17,6 +19,7 @@ const {
   updatePassword,
   protect,
   restrictTo,
+  logout,
 } = require('../controllers/authenticationController');
 
 const router = express.Router();
@@ -27,12 +30,14 @@ router.post('/login', login);
 router.post('/forgotPassword', forgotPassword);
 router.patch('/resetPassword/:token', resetPassword);
 
+router.get('/logout', logout);
+
 // Middleware runs in sequence
 router.use(protect);
 // All of the middleware would have protect automatically
 
 router.patch('/updatePassword', updatePassword);
-router.patch('/updateMe', updateMe);
+router.patch('/updateMe', uploadUserPhoto, resizeUserPhoto, updateMe);
 router.delete('/deleteMe', deleteMe);
 
 router.use(restrictTo('admin'));
